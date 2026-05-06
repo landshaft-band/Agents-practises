@@ -10,8 +10,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TELEGRAM_BOT_TOKEN = '7804353924:AAEbIpRla77OuD5nkaYpQCHAv9nDEFd0Hgo'
-GIGACHAT_AUTH = 'ZTVhYzE5MGEtOWQyZi00MWU3LTg2NDYtMTIyMjYyYzlhMDgwOjk1MjNjMjhkLWM4ZmItNGU3NC1iYzQ4LTFlY2U2NjM5MzFjNQ=='
+TELEGRAM_BOT_TOKEN = ''
+GIGACHAT_AUTH = ''
 GIGACHAT_SCOPE = 'GIGACHAT_API_PERS'
 GIGACHAT_API_URL = "https://gigachat.devices.sberbank.ru/api/v1/chat/completions"
 GIGACHAT_TOKEN_URL = 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth'
