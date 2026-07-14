@@ -105,7 +105,7 @@ class RAGService:
         return full_chain
 
     async def ask(self, question: str) -> dict[str, Any]:
-        return self.chain.invoke({"question": question})
+        return await self.chain.ainvoke({"question": question})
 
 
 __all__ = ["RAGService"]
