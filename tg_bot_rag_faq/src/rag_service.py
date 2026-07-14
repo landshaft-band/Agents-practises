@@ -10,7 +10,7 @@ from typing import Any
 from langchain_gigachat.chat_models import GigaChat
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
-
+from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 # Вместо: from langchain_core.prompts import PipelinePromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
@@ -83,29 +83,33 @@ class RAGService:
 
     @cached_property
     def chain(self):
-        logger.info("TODO: соберите базовую цепочку")
-        answer_chain = ANSWER_PROMPT | self.llm | StrOutputParser()
+        def format_docs(docs):
+            return "\n---\n".join(doc.page_content for doc in docs)
 
-        def _invoke(payload: dict[str, Any]):
-            # 1. Достаньте вопрос из payload
-            question=payload['question']
-            # 2. Получите документы через retriever
-            documents=self.retriever.invoke(question)
-            # 3. Соберите строку контекста ("\n---\n".join(...))
-            context="\n---\n".join(doc.page_content for doc in documents)
-            # 4. Вызовите answer_chain
-            answer=answer_chain.invoke({
-                "context": context,
-                "question": question,}
-            )
-            # 5. Верните dict с ключами answer и source_documents
-            return {
-                    'answer':answer,
-                    "source_documents":documents
-                    }
-            raise NotImplementedError
+        # 1. Параллельно получаем вопрос и релевантные документы
+        retrieve_step = RunnableParallel(
+            question=lambda x: x["question"],
+            documents=lambda x: self.retriever.invoke(x["question"])
+        )
 
-        return RunnableLambda(_invoke)
+        # 2. Формируем ответ на основе контекста и вопроса
+        answer_step = (
+                {
+                    "context": lambda x: format_docs(x["documents"]),
+                    "question": lambda x: x["question"],
+                }
+                | ANSWER_PROMPT
+                | self.llm
+                | StrOutputParser()
+        )
+
+        # 3. Собираем итоговый результат: ответ + исходные документы
+        full_chain = retrieve_step | {
+            "answer": answer_step,
+            "source_documents": lambda x: x["documents"],
+        }
+
+        return full_chain
 
     async def ask(self, question: str) -> dict[str, Any]:
         return self.chain.invoke({"question": question})

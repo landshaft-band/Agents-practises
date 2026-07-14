@@ -11,24 +11,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 def _comma_separated_set(raw: str | None) -> Set[int]:
-
     """TODO: преобразуйте строки вида "123,456" во множество целых чисел."""
     # Подсказка: split(",") + int() внутри цикла.
 
     if not raw:
         return set()
-    result=set()
+    result = set()
 
     for item in raw.split(","):
-        clean_item=item.strip()
+        clean_item = item.strip()
         if clean_item:
             result.add(int(clean_item))
     return result
 
-
-    raise NotImplementedError("Верните множество user_id")
 
 def _to_bool(value: str) -> bool:
     return value.strip().lower() in ("1", "true", "yes", "on")
@@ -36,7 +32,6 @@ def _to_bool(value: str) -> bool:
 @dataclass(slots=True)
 class Settings:
     """TODO: заполните поля значениями из .env."""
-
 
     telegram_bot_token: str = field(
         default_factory=lambda: os.environ["TELEGRAM_BOT_TOKEN"]

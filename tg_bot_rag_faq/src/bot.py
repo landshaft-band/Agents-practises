@@ -26,6 +26,7 @@ def check_user(func):
         return await func(self, message, *args, **kwargs)
     return wrapper
 
+
 class TelegramRAGBot:
     """Минимальный набор методов, которые должен реализовать студент."""
 
@@ -67,8 +68,8 @@ class TelegramRAGBot:
 
         user_id = message.from_user.id
         question = message.text
-        result= await self.rag_service.ask(question)
-        answer=result["answer"]
+        result = await self.rag_service.ask(question)
+        answer = result["answer"]
         source_documents = result.get("source_documents", [])
         self.chat_history[user_id].append(
             (question, answer)
