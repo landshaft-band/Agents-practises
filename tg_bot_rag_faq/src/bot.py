@@ -1,7 +1,7 @@
 """Шаблон Telegram-бота для обучения."""
 
 from __future__ import annotations
-
+from functools import wraps
 import asyncio
 import logging
 from collections import defaultdict
@@ -15,7 +15,16 @@ from tg_bot_rag_faq.src.config import Settings
 from tg_bot_rag_faq.src.rag_service import RAGService
 
 logger = logging.getLogger(__name__)
-
+##Декоратор для проверки пользоватея
+def check_user(func):
+    @wraps(func)
+    async def wrapper(self, message: Message, *args, **kwargs):
+        user_id = message.from_user.id
+        if user_id not in self.settings.allowed_user_ids:
+            await message.answer("Ошибка доступа!")
+            return
+        return await func(self, message, *args, **kwargs)
+    return wrapper
 
 class TelegramRAGBot:
     """Минимальный набор методов, которые должен реализовать студент."""
@@ -36,42 +45,27 @@ class TelegramRAGBot:
         self.dispatcher.message.register(self.handle_help, Command("help"))
         self.dispatcher.message.register(self.handle_message, F.text)
 
-
+    @check_user
     async def handle_start(self, message: Message) -> None:
-        user_id = message.from_user.id
-
-        if user_id not in self.settings.allowed_user_ids:
-            await message.answer(
-                "Ошибка доступа!"
-            )
-            return
 
         await message.answer("""Это бот ретривер misiseek.\n
         Доступные команды:\n
         /start — начать работу\n
         /help — показать помощь""")
 
+    @check_user
     async def handle_help(self, message: Message) -> None:
         """Обработчик команды /help"""
-        user_id = message.from_user.id
-
-        if user_id not in self.settings.allowed_user_ids:
-            await message.answer("Ошибка доступа!")
-            return
 
         await message.answer(
-            "Задайте мне любой вопрос, и я найду ответ в базе знаний."
+            "Задайте мне любой вопрос теме почты, и я найду ответ в базе знаний."
         )
+
+    @check_user
     async def handle_message(self, message: Message) -> None:
         """Подсказка: проверьте доступ, вызовите RAG и верните ответ + источники."""
 
         user_id = message.from_user.id
-
-        if user_id not in self.settings.allowed_user_ids:
-            await message.answer(
-                "Ошибка доступа!"
-            )
-            return
         question = message.text
         result= await self.rag_service.ask(question)
         answer=result["answer"]
