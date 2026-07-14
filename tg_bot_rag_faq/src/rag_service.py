@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 from functools import cached_property
 from typing import Any
-
+import json
+from pathlib import Path
 # Новые раздельные пакеты для aполной совместимости
 from langchain_gigachat.chat_models import GigaChat
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
@@ -21,22 +22,14 @@ from tg_bot_rag_faq.src.config import Settings, settings
 logger = logging.getLogger(__name__)
 
 
-ANSWER_PROMPT = ChatPromptTemplate.from_messages(
-    [
-        ("system", """
-        Ты — полезный ассистент. 
-        Отвечай на вопросы пользователя, используя только предоставленный контекст.
-        Если в контексте нет необходимой информации, сообщи об этом и не придумывай ответ.
-        
-        Контекст:
-        {context}
-        """),
-        ("human", """
-        Вопрос пользователя:
-        {question}
-        """),
-    ]
-)
+
+def load_prompt_from_json(file_path: str | Path) -> ChatPromptTemplate:
+    with open(file_path, 'r', encoding='utf-8') as f:
+        messages = json.load(f)
+    messages_as_tuples = [tuple(msg) for msg in messages]
+    return ChatPromptTemplate.from_messages(messages_as_tuples)
+
+ANSWER_PROMPT = load_prompt_from_json("prompts/answer_prompt.json")
 
 
 class RAGService:
