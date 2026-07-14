@@ -3,9 +3,16 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+.idea/
+
+
 # C extensions
 *.so
-
+# FAISS индексы
+storage/faiss_index/
+*.faiss
+*.pkl
+*.pickle
 # Distribution / packaging
 .Python
 build/
