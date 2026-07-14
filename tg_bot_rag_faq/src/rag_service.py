@@ -16,7 +16,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
 from langchain_community.vectorstores import FAISS
 # Импортируем и класс, и сам созданный экземпляр настроек settings
-from .config import Settings, settings
+from tg_bot_rag_faq.src.config import Settings, settings
 
 logger = logging.getLogger(__name__)
 

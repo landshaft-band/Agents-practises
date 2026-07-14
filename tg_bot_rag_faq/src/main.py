@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from .bot import run_bot
+from tg_bot_rag_faq.src.bot import run_bot
 
 logging.basicConfig(level=logging.INFO)
 

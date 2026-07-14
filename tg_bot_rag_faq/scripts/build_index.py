@@ -11,8 +11,8 @@ from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 
-from src.config import settings
-from src.rag_service import RAGService
+from tg_bot_rag_faq.src.config import settings
+from tg_bot_rag_faq.src.rag_service import RAGService
 
 
 def load_dataset(path: pathlib.Path) -> list[Document]:
