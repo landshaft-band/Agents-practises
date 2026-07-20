@@ -11,8 +11,8 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 
-from tg_bot_rag_faq.src.config import Settings
-from tg_bot_rag_faq.src.rag_service import RAGService
+from src.config import Settings
+from src.rag_service import RAGService
 
 logger = logging.getLogger(__name__)
 ##Декоратор для проверки пользоватея
