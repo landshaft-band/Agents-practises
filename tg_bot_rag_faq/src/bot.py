@@ -73,15 +73,12 @@ class TelegramRAGBot:
         # 1. Сохраняем вопрос пользователя
         await save_message(user_id, "user", question)
 
-        # 2. (Опционально) Загружаем последние сообщения для контекста
-        #    Здесь мы можем передать их в RAG, но для этого нужно модифицировать
-        #    RAGService. Пока просто загружаем для демонстрации (можно залогировать).
-        history = await get_recent_messages(user_id, limit=HISTORY_LIMIT)
-        logger.debug("Загружено %d сообщений из истории для user=%s", len(history), user_id)
+        # 2. Загружаем историю для контекста
+        history = await get_recent_messages(user_id, limit=10)  # 10 последних сообщений
 
-        # 3. Вызов RAG (пока без истории, так как RAGService не принимает её)
-        #    В будущем можно расширить метод ask, передав history.
-        result = await self.rag_service.ask(question)
+        # 3. Вызываем RAG с историей
+        result = await self.rag_service.ask(question, history)
+
         answer = result.get("answer", "Извините, не удалось получить ответ.")
         source_documents = result.get("source_documents", [])
 
@@ -91,7 +88,7 @@ class TelegramRAGBot:
         # 5. Формируем ответ пользователю
         response = answer
         if source_documents:
-            response += "\n\nИсточники:\n"
+            response += "\n\n Источники:\n"
             for i, doc in enumerate(source_documents, start=1):
                 source = doc.metadata.get("source", "Неизвестный источник")
                 response += f"{i}. {source}\n"

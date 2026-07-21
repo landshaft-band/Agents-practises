@@ -7,6 +7,7 @@ from functools import cached_property
 from typing import Any
 import json
 from pathlib import Path
+from typing import Any, List, Tuple
 # Новые раздельные пакеты для aполной совместимости
 from langchain_gigachat.chat_models import GigaChat
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
@@ -79,16 +80,16 @@ class RAGService:
         def format_docs(docs):
             return "\n---\n".join(doc.page_content for doc in docs)
 
-        # 1. Параллельно получаем вопрос и релевантные документы
         retrieve_step = RunnableParallel(
             question=lambda x: x["question"],
-            documents=lambda x: self.retriever.invoke(x["question"])
+            documents=lambda x: self.retriever.invoke(x["question"]),
+            history=lambda x: x.get("history", ""),  # исправлено
         )
 
-        # 2. Формируем ответ на основе контекста и вопроса
         answer_step = (
                 {
                     "context": lambda x: format_docs(x["documents"]),
+                    "history": lambda x: x["history"],
                     "question": lambda x: x["question"],
                 }
                 | ANSWER_PROMPT
@@ -96,16 +97,26 @@ class RAGService:
                 | StrOutputParser()
         )
 
-        # 3. Собираем итоговый результат: ответ + исходные документы
         full_chain = retrieve_step | {
             "answer": answer_step,
             "source_documents": lambda x: x["documents"],
         }
-
         return full_chain
 
-    async def ask(self, question: str) -> dict[str, Any]:
-        return await self.chain.ainvoke({"question": question})
+    async def ask(self, question: str, history: List[Tuple[str, str]] = None) -> dict[str, Any]:
+        # Форматируем историю для промпта
+        history_text = ""
+        if history:
+            # Берём последние 5 сообщений для контекста
+            recent = history[-5:] if len(history) > 5 else history
+            history_text = "\n".join([
+                f"{'Пользователь' if role == 'user' else 'Ассистент'}: {msg}"
+                for role, msg in recent
+            ])
 
-
+        # Передаём историю в цепочку
+        return await self.chain.ainvoke({
+            "question": question,
+            "history": history_text  # Добавляем новое поле
+        })
 __all__ = ["RAGService"]
