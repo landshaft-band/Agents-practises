@@ -13,8 +13,12 @@ from aiogram.types import Message
 
 from src.config import Settings
 from src.rag_service import RAGService
+from src.db import init_db, save_message, get_recent_messages, cleanup_old_messages
 
 logger = logging.getLogger(__name__)
+
+HISTORY_LIMIT = 10
+
 ##Декоратор для проверки пользоватея
 def check_user(func):
     @wraps(func)
@@ -39,7 +43,6 @@ class TelegramRAGBot:
         )
         self.dispatcher = Dispatcher()
         self.chat_history: Dict[int, List[Tuple[str, str]]] = defaultdict(list)
-
         self.dispatcher.message.register(self.handle_start, CommandStart())
 
         # TODO: добавьте остальные хендлеры (/help, обычный текст)
@@ -64,31 +67,57 @@ class TelegramRAGBot:
 
     @check_user
     async def handle_message(self, message: Message) -> None:
-        """Подсказка: проверьте доступ, вызовите RAG и верните ответ + источники."""
-
         user_id = message.from_user.id
         question = message.text
+
+        # 1. Сохраняем вопрос пользователя
+        await save_message(user_id, "user", question)
+
+        # 2. (Опционально) Загружаем последние сообщения для контекста
+        #    Здесь мы можем передать их в RAG, но для этого нужно модифицировать
+        #    RAGService. Пока просто загружаем для демонстрации (можно залогировать).
+        history = await get_recent_messages(user_id, limit=HISTORY_LIMIT)
+        logger.debug("Загружено %d сообщений из истории для user=%s", len(history), user_id)
+
+        # 3. Вызов RAG (пока без истории, так как RAGService не принимает её)
+        #    В будущем можно расширить метод ask, передав history.
         result = await self.rag_service.ask(question)
-        answer = result["answer"]
+        answer = result.get("answer", "Извините, не удалось получить ответ.")
         source_documents = result.get("source_documents", [])
-        self.chat_history[user_id].append(
-            (question, answer)
-        )
 
+        # 4. Сохраняем ответ ассистента
+        await save_message(user_id, "assistant", answer)
+
+        # 5. Формируем ответ пользователю
         response = answer
-
         if source_documents:
             response += "\n\nИсточники:\n"
-
             for i, doc in enumerate(source_documents, start=1):
                 source = doc.metadata.get("source", "Неизвестный источник")
                 response += f"{i}. {source}\n"
 
         await message.answer(response)
 
+
     async def run(self) -> None:
-        logger.info("Запуск учебного бота")
+        """Запуск бота с предварительной инициализацией БД и фоновой очисткой."""
+        # Инициализация БД
+        await init_db()
+
+        # Запуск фоновой задачи для очистки старых записей (каждые 24 часа)
+        asyncio.create_task(self._periodic_cleanup())
+
+        logger.info("Запуск бота")
         await self.dispatcher.start_polling(self.bot)
+
+    async def _periodic_cleanup(self, interval_hours: int = 24, retention_days: int = 7) -> None:
+        """Фоновая задача: удаляет старые сообщения каждые interval_hours часов."""
+        while True:
+            try:
+                await asyncio.sleep(interval_hours * 3600)
+                await cleanup_old_messages(days=retention_days)
+            except Exception as e:
+                logger.exception("Ошибка в фоновой очистке: %s", e)
 
 
 async def run_bot() -> None:
