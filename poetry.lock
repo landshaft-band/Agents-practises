@@ -842,6 +842,23 @@ files = [
 ]
 
 [[package]]
+name = "gigachat"
+version = "0.2.1"
+description = "GigaChat. Python-library for GigaChat API"
+optional = false
+python-versions = "<4,>=3.8"
+groups = ["main"]
+files = [
+    {file = "gigachat-0.2.1-py3-none-any.whl", hash = "sha256:a4a4fb9e2db0905b7ab5a340d5029527a177811b8b609998d600c95e8a8a060c"},
+    {file = "gigachat-0.2.1.tar.gz", hash = "sha256:4b6bb976ffd1fec22c813e2f40f100fff60efc2c50b91cc36aa6df5f888d0373"},
+]
+
+[package.dependencies]
+httpx = ">=0.24,<1"
+pydantic = ">=2.0,<3"
+pydantic-settings = {version = ">=2.0,<3", markers = "python_version >= \"3.10\""}
+
+[[package]]
 name = "greenlet"
 version = "3.5.3"
 description = "Lightweight in-process concurrent programming"
@@ -1350,6 +1367,22 @@ pyyaml = ">=5.3.0,<7.0.0"
 tenacity = ">=8.1.0,<8.4.0 || >8.4.0,<10.0.0"
 typing-extensions = ">=4.7.0,<5.0.0"
 uuid-utils = ">=0.12.0,<1.0"
+
+[[package]]
+name = "langchain-gigachat"
+version = "0.5.1"
+description = "An integration package connecting GigaChat and LangChain"
+optional = false
+python-versions = "<4,>=3.10"
+groups = ["main"]
+files = [
+    {file = "langchain_gigachat-0.5.1-py3-none-any.whl", hash = "sha256:900a44a4c36926118974e3cddc689b23547d3cd21d1d7649b1e979a434e66a00"},
+    {file = "langchain_gigachat-0.5.1.tar.gz", hash = "sha256:0979813e391fb66fb356990dce36d8db23e4634b78914b03ffdade96ada718a7"},
+]
+
+[package.dependencies]
+gigachat = ">=0.2.1,<0.3"
+langchain-core = ">=1,<2"
 
 [[package]]
 name = "langchain-protocol"
@@ -3936,4 +3969,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "3ef356ccba9143d4e856e3c288b8e98b09051682f35fd9e88239bbd3132ec951"
+content-hash = "5b9814063e1518c26d85c1293fcccfd6cb27ce0e644e8c386b31a6bea827f302"

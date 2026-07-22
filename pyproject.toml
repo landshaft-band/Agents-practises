@@ -105,7 +105,8 @@ dependencies = [
     "yarg (>=0.1.10,<0.2.0)",
     "zstandard (>=0.25.0,<0.26.0)",
     "pydantic-settings (>=2.5.0,<3.0.0)",
-    "aiosqlite (>=0.22.1,<0.23.0)"
+    "aiosqlite (>=0.22.1,<0.23.0)",
+    "langchain-gigachat (>=0.5.1,<0.6.0)"
 ]
 
 [tool.poetry]
