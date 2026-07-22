@@ -31,8 +31,7 @@ def main():
     os.chdir(root_dir)
 
     # Команда, которую нужно выполнить
-    cmd = ["poetry", "run", "python", "tg_bot_rag_faq/src/main.py"]
-
+    cmd = [sys.executable, "-m", "poetry", "run", "python", "tg_bot_rag_faq/src/main.py"]
     print(f"-> Запуск из корня: {root_dir}")
     print(f"-> Выполняется: {' '.join(cmd)}\n")
 
