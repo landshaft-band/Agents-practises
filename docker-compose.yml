@@ -4,23 +4,22 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: tg-rag-bot
-    restart: unless-stopped
+    restart: unless-stopped          # автоматический перезапуск при падении
     env_file:
-      - .env
+      - .env                         # загружаем переменные окружения
     environment:
-      - TZ=Europe/Moscow
+      - TZ=Europe/Moscow             # часовой пояс (опционально)
     volumes:
+      # Том для хранения базы данных и FAISS-индекса
       - ./storage:/app/storage
-      # Для разработки раскомментируйте:
+
+      # Для удобной разработки – раскомментируйте строку ниже,
+      # чтобы монтировать текущую папку с кодом внутрь контейнера.
+      # Тогда изменения в коде будут сразу видны без пересборки.
       # - .:/app
-    # ports:
-    #   - "8443:8443"
-    healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+
+    # Порты не нужны, так как бот работает через polling
+    # healthcheck можно добавить позже, но для простоты опускаем
     networks:
       - tg-network
 
