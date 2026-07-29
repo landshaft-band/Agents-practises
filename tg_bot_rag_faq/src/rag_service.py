@@ -22,16 +22,31 @@ from config import Settings, settings
 
 logger = logging.getLogger(__name__)
 
+import re
+from pathlib import Path
+from langchain_core.prompts import ChatPromptTemplate
 
-
-def load_prompt_from_json(file_path: str | Path) -> ChatPromptTemplate:
+# читаем txt вместо json
+def load_prompt_from_txt(file_path: str | Path) -> ChatPromptTemplate:
     with open(file_path, 'r', encoding='utf-8') as f:
-        messages = json.load(f)
-    messages_as_tuples = [tuple(msg) for msg in messages]
-    return ChatPromptTemplate.from_messages(messages_as_tuples)
+        content = f.read()
 
-ANSWER_PROMPT = load_prompt_from_json("prompts/answer_prompt.json")
+    pattern = r'\[(SYSTEM|HUMAN|AI)\]\s*(.*?)(?=\n\s*\[(?:SYSTEM|HUMAN|AI)\]|$)'
+    matches = re.findall(pattern, content, re.DOTALL)
 
+    messages = []
+    for role, text in matches:
+        role_lower = role.lower()
+        cleaned = text.strip()
+        if cleaned:
+            messages.append((role_lower, cleaned))
+
+    if not messages:
+        raise ValueError(f"Не найдено секций [SYSTEM]/[HUMAN] в {file_path}")
+
+    return ChatPromptTemplate.from_messages(messages)
+
+ANSWER_PROMPT = load_prompt_from_txt("prompts/answer_prompt.txt")
 
 class RAGService:
     """Скелет, где нужно реализовать шаги RAG."""
