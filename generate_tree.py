@@ -1,7 +1,7 @@
 import os
 
 # Список папок и файлов, которые нужно игнорировать (чтобы не забивать контекст LLM)
-EXCLUDE_DIRS = {'.git', '__pycache__', 'node_modules', '.venv', 'venv', 'env', '.idea', '.vscode', 'dist', 'build'}
+EXCLUDE_DIRS = {'.git', '__pycache__', 'node_modules', '.venv', 'venv', 'env', '.idea', '.vscode', 'dist', 'build', '.venv-poetry', '.ruff_cache'}
 EXCLUDE_FILES = {'.DS_Store', 'generate_tree.py', 'project_tree.txt'}
 
 
